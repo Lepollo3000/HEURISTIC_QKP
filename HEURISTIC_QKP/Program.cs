@@ -1,4 +1,5 @@
-﻿using HEURISTIC_QKP.Utils;
+﻿using HEURISTIC_QKP.Models;
+using HEURISTIC_QKP.Utils;
 
 namespace HEURISTIC_QKP
 {
@@ -9,9 +10,9 @@ namespace HEURISTIC_QKP
             ReadingInstanceService service = new ReadingInstanceService();
 
             Console.Write(
-                "----------------------------------------------------------\n" +
+                "==========================================================\n" +
                 "\t\tQuadratic Knapsack Problem\n" +
-                "----------------------------------------------------------\n" +
+                "==========================================================\n" +
                 " If you know the name of the instance you want to test...\n" +
                 " Type it, please: ~ "
             );
@@ -19,7 +20,15 @@ namespace HEURISTIC_QKP
             string? directory = Console.ReadLine();
 
             if (!string.IsNullOrEmpty(directory))
-                service.GetInstanceData(directory);
+            {
+                Instance instance = service.GetInstanceData(directory);
+
+                if (instance != null)
+                {
+                    InstanceCalculations calculations = service.GetInstanceCalculations(instance);
+                }
+            }
+
         }
     }
 }
