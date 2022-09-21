@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HEURISTIC_QKP.Utils
 {
-    public interface IInstanceService
+    public interface IReadingInstanceService
     {
         Instance GetInstanceData(string directory);
     }
