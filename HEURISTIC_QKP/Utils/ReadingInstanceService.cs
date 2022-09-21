@@ -10,18 +10,25 @@ namespace HEURISTIC_QKP.Utils
 {
     public class ReadingInstanceService : IReadingInstanceService
     {
-        public Instance GetInstanceData(string directory)
+        public Instance GetInstanceData(string fileName)
         {
-            
+            TryGetFile(fileName);
 
             return null;
         }
 
-        private bool TryGetFile()
+        private FileInfo[] TryGetFile(string fileName)
         {
+            string folderPath = System.AppContext.BaseDirectory + "/FileInstances";
+            DirectoryInfo directory = new DirectoryInfo(folderPath);
+            FileInfo[] files = directory.GetFiles("jeu_100_25_1*", SearchOption.TopDirectoryOnly);
 
+            foreach (var file in files)
+            {
+                // do something here
+            }
 
-            return false;
+            return null;
         }
     }
 }

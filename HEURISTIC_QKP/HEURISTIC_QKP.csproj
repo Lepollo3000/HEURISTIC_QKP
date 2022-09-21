@@ -11,4 +11,13 @@
     <Folder Include="FileInstances\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="FileInstances\jeu_100_25_1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="FileInstances\jeu_100_25_2.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
