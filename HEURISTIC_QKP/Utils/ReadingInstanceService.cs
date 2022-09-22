@@ -28,25 +28,41 @@ namespace HEURISTIC_QKP.Utils
             {
                 int sum = 0;
 
-                for (int j = 0; j < instance.QuadraticCoeficients.Count() - escalon; j++)
+                for (int j = 0; j <= instance.QuadraticCoeficients.Count() - escalon; j++)
                 {
-                    if (j == instance.QuadraticCoeficients.Count() - i)
-                        break;
-
-                    Console.Write(instance.QuadraticCoeficients[i][j].Value + "\t");
-                    sum += instance.QuadraticCoeficients[i][j].Value;
-                    //Console.Write($"{i},{j}\t");
-                    /*
-                    int count = 1;
-                    if (j < totalCoeficients - i - 1)
-                        sum += instance.QuadraticCoeficients[i][j].Value;
-                    else
+                    if (j == instance.QuadraticCoeficients.Count() - escalon - 1)
                     {
-                        count++;
-                        sum += instance.QuadraticCoeficients[i - count][j + 1].Value;
+
+                        Console.Write($"{instance.QuadraticCoeficients[i][j].Value}\t");
+                        sum += instance.QuadraticCoeficients[i][j].Value;
+
+                        int escalon2 = 1;
+
+                        if (i != 0)
+                        {
+                            for (int k = i; Math.Abs(i) >= escalon2; k--)
+                            {
+                                if (k > 0)
+                                    sum += instance.QuadraticCoeficients[i - escalon2][j + 1].Value;
+
+                                escalon2++;
+                            }
+                        }
+
+                        break;
                     }
-                    */
+                    else if (j == instance.QuadraticCoeficients.Count() - escalon)
+                    {
+                        for (int k = 0; k < instance.QuadraticCoeficients.Count() - 1; k++)
+                            sum += instance.QuadraticCoeficients[k][0].Value;
+
+                        break;
+                    }
+
+                    Console.Write($"{instance.QuadraticCoeficients[i][j].Value}\t");
+                    sum += instance.QuadraticCoeficients[i][j].Value;
                 }
+
                 escalon++;
                 Console.WriteLine("");
                 listRelationProductProduct.Add(sum);
