@@ -6,5 +6,6 @@ namespace HEURISTIC_QKP.Utils
     {
         Instance GetInstanceData(string directory);
         InstanceCalculations GetInstanceCalculations(Instance instance);
+        InstanceSolution GetInstanceSolution(InstanceCalculations calculations, Instance instance);
     }
 }

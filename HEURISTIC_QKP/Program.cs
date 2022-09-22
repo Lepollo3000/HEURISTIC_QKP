@@ -26,6 +26,11 @@ namespace HEURISTIC_QKP
                 if (instance != null)
                 {
                     InstanceCalculations calculations = service.GetInstanceCalculations(instance);
+
+                    if(calculations != null)
+                    {
+                        InstanceSolution solution = service.GetInstanceSolution(calculations, instance);
+                    }
                 }
             }
 
