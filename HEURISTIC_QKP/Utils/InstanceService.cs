@@ -9,76 +9,21 @@ namespace HEURISTIC_QKP.Utils
     {
         public Instance? GetInstanceData(string fileName)
         {
-            var model = TryGetFileData(fileName);
+            Instance? model = TryGetFileData(fileName);
 
             return model;
         }
 
         public InstanceCalculations? GetInstanceCalculations(Instance instance)
         {
-            float[] listRelationWeightProfit = instance.LinearCoeficients.Select(cl => (float)cl.Value / (float)cl.Weight).ToArray();
-            int[] listRelationProductProduct = GetInstanceRPP(instance);
-
-            InstanceRelation[] calculations = new InstanceRelation[instance.NumberCoeficients];
-
-            for (int i = 0; i < instance.LinearCoeficients.Count(); i++)
-            {
-                float division = listRelationProductProduct[i] / listRelationWeightProfit[i];
-
-                InstanceRelation calculation = new InstanceRelation()
-                {
-                    LinearCoeficient = instance.LinearCoeficients[i],
-                    RelationWeightProfit = listRelationWeightProfit[i],
-                    RelationProductProduct = listRelationProductProduct[i],
-                    RelationOfRelations = division
-                };
-
-                calculations[i] = calculation;
-            }
-
-            calculations = calculations.OrderBy(c => c.RelationOfRelations).ToArray();
-
-            InstanceCalculations model = new InstanceCalculations()
-            {
-                Relations = calculations
-            };
+            InstanceCalculations model = new InstanceCalculations(instance);
 
             return model;
         }
 
         public InstanceSolution? GetInstanceSolution(InstanceCalculations calculations, Instance instance)
         {
-            int totalWeight = 0, totalValue = 0;
-            List<LinearCoeficient> selectedData = new List<LinearCoeficient>();
-
-            // SUM OF WEIGHTS AND VALUES WITHOUT EXCEEDING KNAPSACK CAPACITY
-            foreach (var item in calculations.Relations)
-            {
-                if (totalWeight + item.LinearCoeficient.Weight < instance.KnapsackCapacity)
-                {
-                    totalWeight += item.LinearCoeficient.Weight;
-                    totalValue += item.LinearCoeficient.Value;
-
-                    selectedData.Add(instance.LinearCoeficients
-                        .Where(lc => lc.ItemNumber == item.LinearCoeficient.ItemNumber).First());
-                }
-            }
-
-            // SUM OF COMBINATORIAL VALUES OF SELECTED DATA
-            for (int i = 0; i < selectedData.Count - 1; i++)
-            {
-                for (int j = i + 1; j < selectedData.Count; j++)
-                {
-                    totalValue += instance.QuadraticCoeficients[selectedData[i].ItemNumber, selectedData[j].ItemNumber].Value;
-                }
-            }
-
-            InstanceSolution model = new InstanceSolution()
-            {
-                SelectedData = selectedData.OrderBy(s => s.ItemNumber).ToList(),
-                TotalWeight = totalWeight,
-                TotalValue = totalValue
-            };
+            InstanceSolution model = new InstanceSolution(calculations, instance);
 
             return model;
         }
@@ -104,7 +49,6 @@ namespace HEURISTIC_QKP.Utils
                 {
                     using (StreamReader sr = new StreamReader(filePath))
                     {
-                        string line;
                         // FILENAME
                         string strInstanceName = sr.ReadLine();
                         // ARRAY SIZE
@@ -118,7 +62,9 @@ namespace HEURISTIC_QKP.Utils
 
                         Instance instance = new Instance(strInstanceName, numberCoeficients);
 
+                        // DID THIS TO SAVE RESOURCES INSTEAD OF HAVING ALL IN RAM
                         int i = 0;
+                        string line;
                         while ((line = sr.ReadLine()) != null)
                         {
                             if (string.IsNullOrWhiteSpace(line) || string.IsNullOrEmpty(line)) break;
@@ -135,8 +81,7 @@ namespace HEURISTIC_QKP.Utils
                         // 0 USELESS NUMBER VALIDATION
                         string strZeroValue = sr.ReadLine();
                         int zeroValue = int.Parse(strZeroValue);
-
-                        // IF THERE'S NO 0 THE FORMAT IS WRONG
+                        // IF THERE'S NO 0, THE FORMAT IS WRONG, SO THROW FORMAT EXCEPTION
                         if (zeroValue != 0) throw new FormatException();
 
                         // KNAPSACK CAPACITY
@@ -170,32 +115,13 @@ namespace HEURISTIC_QKP.Utils
             {
                 Console.Write(
                     "======================================================\n" +
-                    " There was a problem with the format of the file.\n" +
+                    " There was a problem with the file format.\n" +
                     " Please try again later or try another instance file.\n" +
                     "======================================================\n"
                 );
             }
 
             return null;
-        }
-
-        private int[] GetInstanceRPP(Instance instance)
-        {
-            int[] relationProductProduct = new int[instance.NumberCoeficients];
-
-            for (int i = 0; i < instance.NumberCoeficients; i++)
-            {
-                int sum = 0;
-
-                for (int j = 0; j < instance.NumberCoeficients; j++)
-                {
-                    sum += instance.QuadraticCoeficients[i, j].Value;
-                }
-
-                relationProductProduct[i] = sum;
-            }
-
-            return relationProductProduct;
         }
     }
 }
