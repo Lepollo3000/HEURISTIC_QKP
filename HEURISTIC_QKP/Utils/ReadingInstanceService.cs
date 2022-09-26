@@ -1,42 +1,42 @@
 ﻿using HEURISTIC_QKP.Models;
 using System.Data;
+using System.Globalization;
+using System.Security.Principal;
 
 namespace HEURISTIC_QKP.Utils
 {
-    public class ReadingInstanceService : IReadingInstanceService
+    public class InstanceService : IInstanceService
     {
-        public Instance GetInstanceData(string fileName)
+        public Instance? GetInstanceData(string fileName)
         {
-            var model = TryGetFile(fileName);
+            var model = TryGetFileData(fileName);
 
             return model;
         }
 
-        public InstanceCalculations GetInstanceCalculations(Instance instance)
+        public InstanceCalculations? GetInstanceCalculations(Instance instance)
         {
-            List<float> listRelationWeightProfit = instance.LinearCoeficients.Select(cl => (float)cl.Weight / (float)cl.Value).ToList();
-            List<int> listRelationProductProduct = GetInstanceRPP(instance);
-            List<float> listRelationOfRelations = new List<float>();
-            List<InstanceRelation> calculations = new List<InstanceRelation>();
+            float[] listRelationWeightProfit = instance.LinearCoeficients.Select(cl => (float)cl.Value / (float)cl.Weight).ToArray();
+            int[] listRelationProductProduct = GetInstanceRPP(instance);
+
+            InstanceRelation[] calculations = new InstanceRelation[instance.NumberCoeficients];
 
             for (int i = 0; i < instance.LinearCoeficients.Count(); i++)
             {
                 float division = listRelationProductProduct[i] / listRelationWeightProfit[i];
 
-                listRelationOfRelations.Add(division);
                 InstanceRelation calculation = new InstanceRelation()
                 {
-                    Weight = instance.LinearCoeficients[i].Weight,
-                    Value = instance.LinearCoeficients[i].Value,
+                    LinearCoeficient = instance.LinearCoeficients[i],
                     RelationWeightProfit = listRelationWeightProfit[i],
                     RelationProductProduct = listRelationProductProduct[i],
-                    RelationOfRelations = listRelationOfRelations[i]
+                    RelationOfRelations = division
                 };
 
-                calculations.Add(calculation);
+                calculations[i] = calculation;
             }
 
-            calculations = calculations.OrderBy(c => c.RelationOfRelations).ToList();
+            calculations = calculations.OrderBy(c => c.RelationOfRelations).ToArray();
 
             InstanceCalculations model = new InstanceCalculations()
             {
@@ -46,33 +46,36 @@ namespace HEURISTIC_QKP.Utils
             return model;
         }
 
-        public InstanceSolution GetInstanceSolution(InstanceCalculations calculations, Instance instance)
+        public InstanceSolution? GetInstanceSolution(InstanceCalculations calculations, Instance instance)
         {
             int totalWeight = 0, totalValue = 0;
-            decimal combinedValues = 0;
             List<LinearCoeficient> selectedData = new List<LinearCoeficient>();
 
+            // SUM OF WEIGHTS AND VALUES WITHOUT EXCEEDING KNAPSACK CAPACITY
             foreach (var item in calculations.Relations)
             {
-                Console.WriteLine(item.Weight);
-                if (totalWeight + item.Weight < instance.KnapsackCapacity)
+                if (totalWeight + item.LinearCoeficient.Weight < instance.KnapsackCapacity)
                 {
-                    totalWeight += item.Weight;
-                    totalValue += item.Value;
+                    totalWeight += item.LinearCoeficient.Weight;
+                    totalValue += item.LinearCoeficient.Value;
 
                     selectedData.Add(instance.LinearCoeficients
-                        .Where(lc => lc.Weight == item.Weight && lc.Value == item.Value).First());
+                        .Where(lc => lc.ItemNumber == item.LinearCoeficient.ItemNumber).First());
                 }
             }
 
-            foreach(var item in selectedData)
+            // SUM OF COMBINATORIAL VALUES OF SELECTED DATA
+            for (int i = 0; i < selectedData.Count - 1; i++)
             {
-                var selectedQuadratic = instance.QuadraticCoeficients[item.ItemNumber];
+                for (int j = i + 1; j < selectedData.Count; j++)
+                {
+                    totalValue += instance.QuadraticCoeficients[selectedData[i].ItemNumber, selectedData[j].ItemNumber].Value;
+                }
             }
 
             InstanceSolution model = new InstanceSolution()
             {
-                SelectedData = selectedData.Select(sd => new InstanceSelectedData() { SelectedData = selectedData}).ToList(),
+                SelectedData = selectedData.OrderBy(s => s.ItemNumber).ToList(),
                 TotalWeight = totalWeight,
                 TotalValue = totalValue
             };
@@ -80,7 +83,7 @@ namespace HEURISTIC_QKP.Utils
             return model;
         }
 
-        private Instance? TryGetFile(string fileName)
+        private Instance? TryGetFileData(string fileName)
         {
             // the reference of the instance(r_10_100_13 in the following example)
             // the number of variables(n) (10 in the following example)
@@ -95,160 +98,104 @@ namespace HEURISTIC_QKP.Utils
             try
             {
                 string folderPath = AppContext.BaseDirectory + "/FileInstances";
-                var directory = new DirectoryInfo(folderPath);
+                string filePath = $"{folderPath}/{fileName}.txt";
 
-                if (directory.Exists)
+                if (!string.IsNullOrEmpty(folderPath))
                 {
-                    FileInfo? file = directory.GetFiles($"{fileName}*", SearchOption.TopDirectoryOnly).FirstOrDefault();
-
-                    if (file != null)
+                    using (StreamReader sr = new StreamReader(filePath))
                     {
-                        Instance instance = new Instance();
+                        string line;
+                        // FILENAME
+                        string strInstanceName = sr.ReadLine();
+                        // ARRAY SIZE
+                        string strNumberCoeficients = sr.ReadLine();
+                        int numberCoeficients = int.Parse(strNumberCoeficients);
+                        // LINEAR COEFICIENTS VALUES
+                        string strLinearCoeficientsValues = sr.ReadLine();
+                        int[] linearCoeficientsValues = strLinearCoeficientsValues.Split(" ")
+                            .Where(l => !string.IsNullOrWhiteSpace(l))
+                            .Select(l => int.Parse(l)).Reverse().ToArray();
 
-                        // GET ALL LINES OF FILE
-                        string[] fileLines = File.ReadAllLines(file.FullName);
-
-                        // NUMBER OF COEFICIENTS
-                        int numberCoeficients = int.Parse(fileLines[1]);
-
-                        // DO A LIST OF THE THIRD LINE TO GET LINEAR COEFICIENT VALUES
-                        string[] linearValuesLine = new string[numberCoeficients];
-                        linearValuesLine = fileLines[2].Split(" ")
-                            .Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
-                        // DO A LIST OF THE LAST LINE TO GET LINEAR COEFICIENT WEIGHTS
-                        string[] linearWeightsLine = fileLines[numberCoeficients + 5].Split(" ")
-                            .Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
-
-                        // DO A LIST OF LISTS TO GET QUADRATIC COEFICIENTS
-                        string[][] quadraticValuesLines = new string[numberCoeficients][];
-
-                        // FILL THE LIST OF QUADRATIC COEFICIENTS FROM THE FOURTH LINE UNTIL THE LAST ONE
-                        for (int i = 3; i < numberCoeficients + 3; i++)
-                        {
-                            string[] line = new string[numberCoeficients];
-                            line = fileLines[i].Split(" ")
-                                .Where(l => !string.IsNullOrWhiteSpace(l)).ToArray();
-
-                            quadraticValuesLines[i - 3] = line;
-                        }
-
-                        var linearValues = linearValuesLine.Select(l => int.Parse(l)).ToList();
-                        var linearWeights = linearWeightsLine.Select(l => int.Parse(l)).ToList();
-                        var quadraticValues = quadraticValuesLines.Select(l => l.Select(q => int.Parse(q)).ToList()).ToList();
-                        var linearCoeficients = new List<LinearCoeficient>();
-
-                        for (int i = 0; i < numberCoeficients; i++)
-                        {
-                            var coeficient = new LinearCoeficient()
-                            {
-                                ItemNumber = i,
-                                Value = linearValues[i],
-                                Weight = linearWeights[i]
-                            };
-
-                            linearCoeficients.Add(coeficient);
-                            //linearC.Select(c => new LinearCoeficient() { Value = c.Value, Weight = c.Weight }).ToList();
-                        }
-
-                        var quadraticCoeficients = quadraticValues
-                            .Select(lq => lq.Select(q => new QuadraticCoeficient() { Value = q }).ToList()).ToList();
+                        Instance instance = new Instance(strInstanceName, numberCoeficients);
 
                         int i = 0;
-                        foreach(var list in quadraticCoeficients)
+                        while ((line = sr.ReadLine()) != null)
                         {
-                            int j = 0;
-                            foreach(var item in list)
-                            {
-                                quadraticCoeficients[i][j].LinearObjectI = i;
-                                quadraticCoeficients[i][j].LinearObjectJ = j;
-                            }
+                            if (string.IsNullOrWhiteSpace(line) || string.IsNullOrEmpty(line)) break;
+
+                            int[] quadraticCoeficients = line.Split(" ")
+                                .Where(l => !string.IsNullOrWhiteSpace(l))
+                                .Select(l => int.Parse(l)).Reverse().ToArray();
+
+                            instance.AddQuadraticData(i, quadraticCoeficients);
 
                             i++;
                         }
 
-                        // FILL THE FIRST INSTANCE DATA :D
-                        instance.Name = fileLines[0];
-                        instance.NumberCoeficients = int.Parse(fileLines[1]);
-                        instance.KnapsackCapacity = int.Parse(fileLines[numberCoeficients + 4]);
-                        instance.LinearCoeficients = linearCoeficients;
-                        instance.QuadraticCoeficients = quadraticCoeficients;
+                        // 0 USELESS NUMBER VALIDATION
+                        string strZeroValue = sr.ReadLine();
+                        int zeroValue = int.Parse(strZeroValue);
+
+                        // IF THERE'S NO 0 THE FORMAT IS WRONG
+                        if (zeroValue != 0) throw new FormatException();
+
+                        // KNAPSACK CAPACITY
+                        string strKnapsackCapacity = sr.ReadLine();
+                        int knapsackCapacity = int.Parse(strKnapsackCapacity);
+
+                        instance.KnapsackCapacity = knapsackCapacity;
+
+                        // LINEAR COEFICIENTS WEIGHTS
+                        string strLinearCoeficientsWeights = sr.ReadLine();
+                        int[] linearCoeficientsWeights = strLinearCoeficientsWeights.Split(" ")
+                            .Where(l => !string.IsNullOrWhiteSpace(l))
+                            .Select(l => int.Parse(l)).Reverse().ToArray();
+
+                        instance.AddLinearData(linearCoeficientsWeights, linearCoeficientsValues);
 
                         return instance;
                     }
                 }
             }
-            catch (DirectoryNotFoundException)
+            catch (IOException)
             {
                 Console.Write(
-                    "----------------------------------------------------------\n" +
-                    "\t\tSorry, the file was not found.\n" +
-                    "\t\tPlease try with another one.\n" +
-                    "----------------------------------------------------------\n"
+                    "===============================================================\n" +
+                    " Sorry, the file was not found.\n" +
+                    " Please verify if the file name is correct or try another one.\n" +
+                    "===============================================================\n"
                 );
             }
             catch (FormatException)
             {
                 Console.Write(
-                    "----------------------------------------------------------\n" +
-                    "\t\tThere was a problem with the format of the file.\n" +
-                    "\t\tPlease try again later or change the instance file.\n" +
-                    "----------------------------------------------------------\n"
+                    "======================================================\n" +
+                    " There was a problem with the format of the file.\n" +
+                    " Please try again later or try another instance file.\n" +
+                    "======================================================\n"
                 );
             }
 
             return null;
         }
 
-        private List<int> GetInstanceRPP(Instance instance)
+        private int[] GetInstanceRPP(Instance instance)
         {
-            var listRelationProductProduct = new List<int>();
-            int escalon = 1;
+            int[] relationProductProduct = new int[instance.NumberCoeficients];
 
-            for (int i = 0; i < instance.QuadraticCoeficients.Count(); i++)
+            for (int i = 0; i < instance.NumberCoeficients; i++)
             {
                 int sum = 0;
 
-                for (int j = 0; j <= instance.QuadraticCoeficients.Count() - escalon; j++)
+                for (int j = 0; j < instance.NumberCoeficients; j++)
                 {
-                    if (j == instance.QuadraticCoeficients.Count() - escalon - 1)
-                    {
-
-                        Console.Write($"{instance.QuadraticCoeficients[i][j].Value}\t");
-                        sum += instance.QuadraticCoeficients[i][j].Value;
-
-                        int escalon2 = 1;
-
-                        if (i != 0)
-                        {
-                            for (int k = i; Math.Abs(i) >= escalon2; k--)
-                            {
-                                if (k > 0)
-                                    sum += instance.QuadraticCoeficients[i - escalon2][j + 1].Value;
-
-                                escalon2++;
-                            }
-                        }
-
-                        break;
-                    }
-                    else if (j == instance.QuadraticCoeficients.Count() - escalon)
-                    {
-                        for (int k = 0; k < instance.QuadraticCoeficients.Count() - 1; k++)
-                            sum += instance.QuadraticCoeficients[k][0].Value;
-
-                        break;
-                    }
-
-                    Console.Write($"{instance.QuadraticCoeficients[i][j].Value}\t");
-                    sum += instance.QuadraticCoeficients[i][j].Value;
+                    sum += instance.QuadraticCoeficients[i, j].Value;
                 }
 
-                escalon++;
-                Console.WriteLine("");
-                listRelationProductProduct.Add(sum);
+                relationProductProduct[i] = sum;
             }
 
-            return listRelationProductProduct;
+            return relationProductProduct;
         }
     }
 }

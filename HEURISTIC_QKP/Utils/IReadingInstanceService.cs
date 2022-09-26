@@ -2,10 +2,10 @@
 
 namespace HEURISTIC_QKP.Utils
 {
-    public interface IReadingInstanceService
+    public interface IInstanceService
     {
-        Instance GetInstanceData(string directory);
-        InstanceCalculations GetInstanceCalculations(Instance instance);
-        InstanceSolution GetInstanceSolution(InstanceCalculations calculations, Instance instance);
+        Instance? GetInstanceData(string directory);
+        InstanceCalculations? GetInstanceCalculations(Instance instance);
+        InstanceSolution? GetInstanceSolution(InstanceCalculations calculations, Instance instance);
     }
 }

@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace HEURISTIC_QKP.Models
 {
-    public class InstanceRelation
+    public struct InstanceRelation
     {
-        public int Weight { get; set; }
-        public int Value { get; set; }
+        public LinearCoeficient LinearCoeficient { get; set; }
         public float RelationWeightProfit { get; set; }
         public int RelationProductProduct { get; set; }
         public float RelationOfRelations { get; set; }

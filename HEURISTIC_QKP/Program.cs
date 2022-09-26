@@ -7,33 +7,57 @@ namespace HEURISTIC_QKP
     {
         static void Main(string[] args)
         {
-            ReadingInstanceService service = new ReadingInstanceService();
+            InstanceService service = new InstanceService();
 
             Console.Write(
                 "==========================================================\n" +
                 "\t\tQuadratic Knapsack Problem\n" +
-                "==========================================================\n" +
-                " If you know the name of the instance you want to test...\n" +
+                "----------------------------------------------------------\n" +
+                " If you know the name of the instance you want to test\n" +
                 " Type it, please: ~ "
             );
 
             string? directory = Console.ReadLine();
 
+            Console.Write(
+                "----------------------------------------------------------\n" +
+                " Reading file, please wait...\n" +
+                "==========================================================\n"
+            );
+
             if (!string.IsNullOrEmpty(directory))
             {
+                Console.Clear();
+
                 Instance instance = service.GetInstanceData(directory);
 
                 if (instance != null)
                 {
+                    Console.WriteLine("");
+
+                    instance.PrintInstanceData();
+
+                    Console.WriteLine("");
+
                     InstanceCalculations calculations = service.GetInstanceCalculations(instance);
 
-                    if(calculations != null)
+                    if (calculations != null)
                     {
                         InstanceSolution solution = service.GetInstanceSolution(calculations, instance);
+
+                        if (solution != null)
+                        {
+                            solution.PrintSolution();
+                        }
                     }
+
+                    Console.WriteLine("");
                 }
             }
 
+            Console.WriteLine("Press any key to exit...");
+
+            Console.ReadKey();
         }
     }
 }

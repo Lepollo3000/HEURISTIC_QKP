@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HEURISTIC_QKP.Models
 {
-    public class LinearCoeficient
+    public struct LinearCoeficient
     {
         public int ItemNumber { get; set; }
         public int Weight { get; set; }
