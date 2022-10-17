@@ -1,5 +1,6 @@
 ﻿using HEURISTIC_QKP.Models;
 using HEURISTIC_QKP.Utils;
+using System.Diagnostics;
 
 namespace HEURISTIC_QKP
 {
@@ -25,11 +26,13 @@ namespace HEURISTIC_QKP
                 "==========================================================\n"
             );
 
+            Stopwatch watch = Stopwatch.StartNew();
+
             if (!string.IsNullOrEmpty(directory))
             {
                 Console.Clear();
 
-                Instance instance = service.GetInstanceData(directory);
+                Instance instance = service.GetInstanceData(directory)!;
 
                 if (instance != null)
                 {
@@ -39,11 +42,11 @@ namespace HEURISTIC_QKP
 
                     Console.WriteLine("");
 
-                    InstanceCalculations calculations = service.GetInstanceCalculations(instance);
+                    InstanceCalculations calculations = service.GetInstanceCalculations(instance)!;
 
                     if (calculations != null)
                     {
-                        InstanceSolution solution = service.GetInstanceSolution(calculations, instance);
+                        InstanceSolution solution = service.GetInstanceSolution(calculations, instance)!;
 
                         if (solution != null)
                         {
@@ -54,6 +57,10 @@ namespace HEURISTIC_QKP
                     Console.WriteLine("");
                 }
             }
+
+            watch.Stop();
+
+            Console.WriteLine($"Elapsed Time: { watch.ElapsedMilliseconds } ms.\n");
 
             Console.WriteLine("Press any key to exit...");
 
