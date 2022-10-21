@@ -28,7 +28,7 @@ namespace HEURISTIC_QKP.Utils
             return model;
         }
 
-        private Instance? TryGetFileData(string fileName)
+        private static Instance? TryGetFileData(string fileName)
         {
             // the reference of the instance(r_10_100_13 in the following example)
             // the number of variables(n) (10 in the following example)
@@ -50,12 +50,12 @@ namespace HEURISTIC_QKP.Utils
                     using (StreamReader sr = new StreamReader(filePath))
                     {
                         // FILENAME
-                        string strInstanceName = sr.ReadLine();
+                        string strInstanceName = sr.ReadLine()!;
                         // ARRAY SIZE
-                        string strNumberCoeficients = sr.ReadLine();
+                        string strNumberCoeficients = sr.ReadLine()!;
                         int numberCoeficients = int.Parse(strNumberCoeficients);
                         // LINEAR COEFICIENTS VALUES
-                        string strLinearCoeficientsValues = sr.ReadLine();
+                        string strLinearCoeficientsValues = sr.ReadLine()!;
                         int[] linearCoeficientsValues = strLinearCoeficientsValues.Split(" ")
                             .Where(l => !string.IsNullOrWhiteSpace(l))
                             .Select(l => int.Parse(l)).Reverse().ToArray();
@@ -65,7 +65,7 @@ namespace HEURISTIC_QKP.Utils
                         // DID THIS TO SAVE RESOURCES INSTEAD OF HAVING ALL IN RAM
                         int i = 0;
                         string line;
-                        while ((line = sr.ReadLine()) != null)
+                        while ((line = sr.ReadLine()!) != null)
                         {
                             if (string.IsNullOrWhiteSpace(line) || string.IsNullOrEmpty(line)) break;
 
@@ -79,19 +79,19 @@ namespace HEURISTIC_QKP.Utils
                         }
 
                         // 0 USELESS NUMBER VALIDATION
-                        string strZeroValue = sr.ReadLine();
+                        string strZeroValue = sr.ReadLine()!;
                         int zeroValue = int.Parse(strZeroValue);
                         // IF THERE'S NO 0, THE FORMAT IS WRONG, SO THROW FORMAT EXCEPTION
                         if (zeroValue != 0) throw new FormatException();
 
                         // KNAPSACK CAPACITY
-                        string strKnapsackCapacity = sr.ReadLine();
+                        string strKnapsackCapacity = sr.ReadLine()!;
                         int knapsackCapacity = int.Parse(strKnapsackCapacity);
 
                         instance.KnapsackCapacity = knapsackCapacity;
 
                         // LINEAR COEFICIENTS WEIGHTS
-                        string strLinearCoeficientsWeights = sr.ReadLine();
+                        string strLinearCoeficientsWeights = sr.ReadLine()!;
                         int[] linearCoeficientsWeights = strLinearCoeficientsWeights.Split(" ")
                             .Where(l => !string.IsNullOrWhiteSpace(l))
                             .Select(l => int.Parse(l)).Reverse().ToArray();

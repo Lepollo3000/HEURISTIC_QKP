@@ -10,6 +10,6 @@ namespace HEURISTIC_QKP.Models
     {
         public int ItemNumber { get; set; }
         public int Weight { get; set; }
-        public int Value { get; set; }
+        public int Profit { get; set; }
     }
 }

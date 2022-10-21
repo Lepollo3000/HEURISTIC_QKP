@@ -26,10 +26,10 @@ namespace HEURISTIC_QKP
                 "==========================================================\n"
             );
 
-            Stopwatch watch = Stopwatch.StartNew();
-
             if (!string.IsNullOrEmpty(directory))
             {
+                Stopwatch watch = Stopwatch.StartNew();
+
                 Console.Clear();
 
                 Instance instance = service.GetInstanceData(directory)!;
@@ -56,11 +56,11 @@ namespace HEURISTIC_QKP
 
                     Console.WriteLine("");
                 }
+
+                watch.Stop();
+
+                Console.WriteLine($"Elapsed Time: {watch.ElapsedMilliseconds} ms.\n");
             }
-
-            watch.Stop();
-
-            Console.WriteLine($"Elapsed Time: { watch.ElapsedMilliseconds } ms.\n");
 
             Console.WriteLine("Press any key to exit...");
 

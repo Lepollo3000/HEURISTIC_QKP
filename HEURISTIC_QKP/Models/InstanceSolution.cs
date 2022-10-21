@@ -5,45 +5,52 @@ namespace HEURISTIC_QKP.Models
     {
         public List<LinearCoeficient> SelectedData { get; set; } = null!;
         public int TotalWeight { get; set; }
-        public int TotalValue { get; set; }
+        public int TotalProfit { get; set; }
 
         public InstanceSolution(InstanceCalculations calculations, Instance instance)
         {
-            int totalWeight = 0, totalValue = 0;
+            int totalWeight = 0, totalProfit = 0;
             List<LinearCoeficient> selectedData = new List<LinearCoeficient>();
 
             // SUM OF WEIGHTS AND VALUES WITHOUT EXCEEDING KNAPSACK CAPACITY
             foreach (var item in calculations.Relations)
             {
-                if (totalWeight + item.LinearCoeficient.Weight < instance.KnapsackCapacity)
+                // IF THE WEIGHT OF THE LINEAR COEFICIENT THAT IS CURRENTLY EVALUATED DONT EXCEED
+                // THE KNAPSACK CAPACITY
+                if (totalWeight + item.LinearCoeficient.Weight <= instance.KnapsackCapacity)
                 {
+                    // ADD THE VALUE AND WEIGHT TO THE TOTAL SUM
                     totalWeight += item.LinearCoeficient.Weight;
-                    totalValue += item.LinearCoeficient.Value;
+                    totalProfit += item.LinearCoeficient.Profit;
 
+                    // ADD THE LINEAR COEFICIENT TO THE MAIN LIST OF SELECTED DATA
                     selectedData.Add(instance.LinearCoeficients
                         .Where(lc => lc.ItemNumber == item.LinearCoeficient.ItemNumber).First());
                 }
             }
 
-            // SUM OF COMBINATORIAL VALUES OF SELECTED DATA
+            // SUM OF COMBINATORIAL PROFIT OF SELECTED DATA
             for (int i = 0; i < selectedData.Count - 1; i++)
             {
                 for (int j = i + 1; j < selectedData.Count; j++)
                 {
-                    totalValue += instance.QuadraticCoeficients[selectedData[i].ItemNumber, selectedData[j].ItemNumber].Value;
+                    totalProfit += instance.QuadraticCoeficients[selectedData[i].ItemNumber, selectedData[j].ItemNumber].ExtraProfit;
                 }
             }
 
+            // ORDER THE FINAL LIST BY ITEM NUMBER
             SelectedData = selectedData.OrderBy(s => s.ItemNumber).ToList();
+            // ADD THE TOTAL SUMATORY OF WEIGHT TO THE MAIN PROPERTY
             TotalWeight = totalWeight;
-            TotalValue = totalValue;
+            // ADD THE TOTAL SUMATORY OF PROFIT TO THE MAIN PROPERTY
+            TotalProfit = totalProfit;
         }
 
         public void PrintSolution()
         {
             Console.Write(
                 $" Total Weight \t\t\t= {TotalWeight}\n" +
-                $" Total Value \t\t\t= {TotalValue}\n" +
+                $" Total Profit \t\t\t= {TotalProfit}\n" +
                 $" Total Selected Objects \t= {SelectedData.Count}\n\n" +
                  " Selected Objects \t= {\t"
             );

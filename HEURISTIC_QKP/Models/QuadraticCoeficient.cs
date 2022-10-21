@@ -10,6 +10,6 @@ namespace HEURISTIC_QKP.Models
     {
         public int LinearObjectI { get; set; }
         public int LinearObjectJ { get; set; }
-        public int Value { get; set; }
+        public int ExtraProfit { get; set; }
     }
 }
