@@ -51,6 +51,19 @@ namespace HEURISTIC_QKP
                         if (solution != null)
                         {
                             solution.PrintSolution();
+                            watch.Stop();
+                            Console.WriteLine($"\nElapsed Time: {watch.ElapsedMilliseconds} ms.\n");
+
+                            watch.Reset();
+                            watch.Start();
+                            LocalSearch localSearch = new LocalSearch(solution, calculations, instance)!;
+
+                            if (localSearch != null)
+                            {
+                                localSearch.PrintNewSolution();
+                                watch.Stop();
+                                Console.WriteLine($"\nElapsed Time: {watch.ElapsedMilliseconds} ms.\n");
+                            }
                         }
                     }
 
