@@ -9,7 +9,6 @@ namespace HEURISTIC_QKP.Models
 {
     public class LocalSearch
     {
-        public Instance Instance { get; set; } = null!;
         public InstanceSolution Solution { get; set; } = null!;
         public InstanceSolution NewSolution { get; set; } = null!;
         public InstanceSolution BestSolution { get; set; } = null!;
@@ -17,10 +16,9 @@ namespace HEURISTIC_QKP.Models
         public LocalSearch(InstanceSolution solution, InstanceCalculations calculations, Instance instance)
         {
             Solution = solution;
-            Instance = instance;
 
             // GET THE FIRST RANDOM OBJECT TO BAN FROM RESULT
-            List<LinearCoeficient> randomBannedCoeficients = GetRandomBannedLinearCoeficients(Solution.SelectedData, new List<LinearCoeficient>());
+            List<LinearCoeficient> randomBannedCoeficients = GetRandomBannedLinearCoeficients(Solution.SelectedData);
 
             int i = 0;
             do
@@ -29,11 +27,12 @@ namespace HEURISTIC_QKP.Models
                 NewSolution = new InstanceSolution(randomBannedCoeficients, calculations, instance);
 
                 // GET ANOTHER RANDOM OBJECTS TO BAN FROM RESULT
-                randomBannedCoeficients = GetRandomBannedLinearCoeficients(Solution.SelectedData, randomBannedCoeficients);
+                randomBannedCoeficients = GetRandomBannedLinearCoeficients(Solution.SelectedData);
                 
                 // VALIDATE IF NEW SOLUTION IS BETTER THAN THE ORIGINAL ONE
                 if(NewSolution.TotalProfit > Solution.TotalProfit)
                 {
+                    Solution = NewSolution;
                     BestSolution = NewSolution;
                 }
                 // OR VALIDATE IF THERE'S ANY BEST SOLUTION
@@ -77,7 +76,7 @@ namespace HEURISTIC_QKP.Models
             Console.Write(" }\n");
         }
 
-        private List<LinearCoeficient> GetRandomBannedLinearCoeficients(IEnumerable<LinearCoeficient> coeficients, IEnumerable<LinearCoeficient> previousCoeficients)
+        private List<LinearCoeficient> GetRandomBannedLinearCoeficients(IEnumerable<LinearCoeficient> coeficients)
         {
             var returnModel = new List<LinearCoeficient>();
             var random = new Random();
