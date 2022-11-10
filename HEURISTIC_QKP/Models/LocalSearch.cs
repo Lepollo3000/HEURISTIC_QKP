@@ -79,16 +79,21 @@ namespace HEURISTIC_QKP.Models
         private List<LinearCoeficient> GetRandomBannedLinearCoeficients(IEnumerable<LinearCoeficient> coeficients)
         {
             var returnModel = new List<LinearCoeficient>();
+            int limit = (int)(coeficients.Count() * .2);
             var random = new Random();
 
+            int i = 0;
             foreach (var coeficient in coeficients)
             {
                 bool includeObject = random.Next(2) == 1;
 
-                if(includeObject)
-                {
+                if (i >= limit)
+                    break;
+
+                else if(includeObject)
                     returnModel.Add(coeficient);
-                }
+
+                i++;
             }
 
             return returnModel;
