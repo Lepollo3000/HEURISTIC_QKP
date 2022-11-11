@@ -32,47 +32,53 @@ namespace HEURISTIC_QKP
 
                 Console.Clear();
 
+                // INSTANCE INFORMATION
                 Instance instance = service.GetInstanceData(directory)!;
+                // INSTANCE BEST SOLUTION
+                InstanceSolution bestSolution = null!;
 
-                if (instance != null)
+                for (int i = 0; i < 10; i++)
                 {
-                    Console.WriteLine("");
-
-                    instance.PrintInstanceData();
-
-                    Console.WriteLine("");
-
-                    InstanceCalculations calculations = service.GetInstanceCalculations(instance)!;
-
-                    if (calculations != null)
+                    if (instance != null)
                     {
-                        InstanceSolution solution = service.GetInstanceSolution(calculations, instance)!;
+                        InstanceCalculations calculations = service.GetInstanceCalculations(instance)!;
 
-                        if (solution != null)
+                        if (calculations != null)
                         {
-                            solution.PrintSolution();
-                            watch.Stop();
-                            Console.WriteLine($"\nElapsed Time: {watch.ElapsedMilliseconds} ms.\n");
+                            InstanceSolution solution = service.GetInstanceSolution(calculations, instance)!;
 
-                            watch.Reset();
-                            watch.Start();
-                            LocalSearch localSearch = new LocalSearch(solution, calculations, instance)!;
-
-                            if (localSearch != null)
+                            if (solution != null)
                             {
-                                localSearch.PrintNewSolution();
-                                watch.Stop();
-                                Console.WriteLine($"\nElapsed Time: {watch.ElapsedMilliseconds} ms.\n");
+                                LocalSearch localSearch = new LocalSearch(solution, calculations, instance)!;
+
+                                if (localSearch != null)
+                                {
+                                    if (bestSolution != null && localSearch.BestSolution.TotalProfit > bestSolution.TotalProfit)
+                                    {
+                                        bestSolution = localSearch.BestSolution;
+                                    }
+                                    else if(bestSolution == null)
+                                    {
+                                        bestSolution = localSearch.BestSolution;
+                                    }
+                                }
                             }
                         }
                     }
-
-                    Console.WriteLine("");
                 }
 
-                watch.Stop();
+                Console.WriteLine("");
 
-                Console.WriteLine($"Elapsed Time: {watch.ElapsedMilliseconds} ms.\n");
+                instance!.PrintInstanceData();
+
+                Console.WriteLine("");
+
+                bestSolution!.PrintSolution();
+
+                watch.Stop();
+                Console.WriteLine($"\nElapsed Time: {watch.ElapsedMilliseconds} ms.\n");
+
+                Console.WriteLine("");
             }
 
             Console.WriteLine("Press any key to exit...");

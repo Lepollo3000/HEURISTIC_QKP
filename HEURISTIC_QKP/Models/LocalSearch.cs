@@ -42,7 +42,7 @@ namespace HEURISTIC_QKP.Models
                 }
 
                 // COLLISIONER
-                if (i > 1000)
+                if (i > 100)
                     break;
 
                 i++;
@@ -79,7 +79,7 @@ namespace HEURISTIC_QKP.Models
         private List<LinearCoeficient> GetRandomBannedLinearCoeficients(IEnumerable<LinearCoeficient> coeficients)
         {
             var returnModel = new List<LinearCoeficient>();
-            int limit = (int)(coeficients.Count() * .2);
+            int limit = (int)(coeficients.Count() * .3);
             var random = new Random();
 
             int i = 0;
