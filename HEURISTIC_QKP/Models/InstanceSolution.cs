@@ -14,6 +14,7 @@ namespace HEURISTIC_QKP.Models
 
         public InstanceSolution(IEnumerable<LinearCoeficient> bannedCoeficients, InstanceCalculations calculations, Instance instance)
         {
+            // UPDATE KINDEX TO THE 30% OF NUMBER OF LINEAR COEFICIENTS
             KIndex = (int)(instance.LinearCoeficients.Count() * .3);
 
             bool KnapsackHasFreeSpace = true;
@@ -25,7 +26,7 @@ namespace HEURISTIC_QKP.Models
             // SUM OF WEIGHTS AND VALUES WITHOUT EXCEEDING KNAPSACK CAPACITY
             while (KnapsackHasFreeSpace)
             {
-                // GET AL MAXIMUM THE FIRST 4 BEST ITEMS IF THE WEIGHT OF THE LINEAR COEFICIENT THAT IS
+                // GET AT MAXIMUM THE FIRST 4 BEST ITEMS IF THE WEIGHT OF THE LINEAR COEFICIENT THAT IS
                 // CURRENTLY EVALUATED DONT EXCEED THE KNAPSACK CAPACITY AND IS NOT PART OF BANNED COEFICIENTS
                 IEnumerable<LinearCoeficient> bestSelected = calculations.Relations
                     .Where(a => bannedCoeficients.All(b => b.ItemNumber != a.LinearCoeficient.ItemNumber))
@@ -33,6 +34,7 @@ namespace HEURISTIC_QKP.Models
                     .Where(a => totalWeight + a.LinearCoeficient.Weight <= instance.KnapsackCapacity)
                     .Select(a => a.LinearCoeficient).Take(KIndex).ToList();
 
+                // IF LINQ GET ANY ITEM, THERE'S STILL SOMETHING TO DO
                 if (bestSelected.Any())
                 {
                     // SELECT RANDOMLY 1 OF THE POSSIBLE 4 ELEMENTS
@@ -47,6 +49,7 @@ namespace HEURISTIC_QKP.Models
                     selectedData.Add(instance.LinearCoeficients
                         .Where(lc => lc.ItemNumber == randomlySelected.ItemNumber).First());
                 }
+                // IF NOT, STOP THE WHILE
                 else
                 {
                     KnapsackHasFreeSpace = false;
@@ -72,6 +75,9 @@ namespace HEURISTIC_QKP.Models
 
         public InstanceSolution(InstanceCalculations calculations, Instance instance)
         {
+            // UPDATE KINDEX TO THE 30% OF NUMBER OF LINEAR COEFICIENTS
+            KIndex = (int)(instance.LinearCoeficients.Count() * .3);
+
             bool KnapsackHasFreeSpace = true;
             int totalWeight = 0, totalProfit = 0;
 
@@ -81,13 +87,14 @@ namespace HEURISTIC_QKP.Models
             // SUM OF WEIGHTS AND VALUES WITHOUT EXCEEDING KNAPSACK CAPACITY
             while (KnapsackHasFreeSpace)
             {
-                // GET AL MAXIMUM THE FIRST 4 BEST ITEMS IF THE WEIGHT OF THE LINEAR COEFICIENT THAT IS
+                // GET AT MAXIMUM THE FIRST 4 BEST ITEMS IF THE WEIGHT OF THE LINEAR COEFICIENT THAT IS
                 // CURRENTLY EVALUATED DONT EXCEED THE KNAPSACK CAPACITY
                 IEnumerable<LinearCoeficient> bestSelected = calculations.Relations
                     .Where(a => selectedData.All(b => b.ItemNumber != a.LinearCoeficient.ItemNumber))
                     .Where(a => totalWeight + a.LinearCoeficient.Weight <= instance.KnapsackCapacity)
                     .Select(a => a.LinearCoeficient).Take(KIndex).ToList();
 
+                // IF LINQ GET ANY ITEM, THERE'S STILL SOMETHING TO DO
                 if (bestSelected.Any())
                 {
                     // SELECT RANDOMLY 1 OF THE POSSIBLE 4 ELEMENTS
@@ -101,6 +108,7 @@ namespace HEURISTIC_QKP.Models
                     selectedData.Add(instance.LinearCoeficients
                         .Where(lc => lc.ItemNumber == randomlySelected.ItemNumber).First());
                 }
+                // IF NOT, STOP THE WHILE
                 else
                 {
                     KnapsackHasFreeSpace = false;
@@ -128,7 +136,7 @@ namespace HEURISTIC_QKP.Models
         {
             Console.Write(
                 "\n==========================================================\n" +
-                "\t\tInstance Original Solution\n" +
+                "\t\t\tInstance Solution\n" +
                 "==========================================================\n\n" +
                 $" Total Weight \t\t\t= {TotalWeight}\n" +
                 $" Total Profit \t\t\t= {TotalProfit}\n" +

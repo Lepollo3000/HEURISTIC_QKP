@@ -42,7 +42,7 @@ namespace HEURISTIC_QKP.Models
                 }
 
                 // COLLISIONER
-                if (i > 100)
+                if (i > 30)
                     break;
 
                 i++;

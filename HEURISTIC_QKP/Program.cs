@@ -37,9 +37,15 @@ namespace HEURISTIC_QKP
                 // INSTANCE BEST SOLUTION
                 InstanceSolution bestSolution = null!;
 
-                for (int i = 0; i < 10; i++)
+                if (instance != null)
                 {
-                    if (instance != null)
+                    Console.WriteLine("");
+
+                    instance!.PrintInstanceData();
+
+                    Console.WriteLine("");
+
+                    for (int i = 0; i < 10; i++)
                     {
                         InstanceCalculations calculations = service.GetInstanceCalculations(instance)!;
 
@@ -57,7 +63,7 @@ namespace HEURISTIC_QKP
                                     {
                                         bestSolution = localSearch.BestSolution;
                                     }
-                                    else if(bestSolution == null)
+                                    else if (bestSolution == null)
                                     {
                                         bestSolution = localSearch.BestSolution;
                                     }
@@ -66,12 +72,6 @@ namespace HEURISTIC_QKP
                         }
                     }
                 }
-
-                Console.WriteLine("");
-
-                instance!.PrintInstanceData();
-
-                Console.WriteLine("");
 
                 bestSolution!.PrintSolution();
 
